@@ -2910,7 +2910,7 @@ void writePanels(unsigned long pt){  // текущее время - функци
 // если выбран самолет
     if(sets.model_type == 0 ) { /* plane */ 
         if( lflags.motor_armed  && lflags.in_air  &&
-          ((int)osd_alt_to_home > 10 || (int)osd_groundspeed > 1 || osd_throttle > 1 )){
+          ((int)osd_alt_to_home > 20 || (int)osd_groundspeed > 1 || osd_throttle > 1 )){
             landed = pt; // пока летаем - заармлен, в воздухе, движется и есть газ -  постоянно обновляем это время
 //DBG_PRINTF("set p landed=%u\n", landed);
 	}
