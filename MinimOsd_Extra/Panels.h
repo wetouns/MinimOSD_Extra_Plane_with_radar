@@ -782,7 +782,7 @@ static void panHomeAlt(point p){
 
     float v=osd_alt_to_home;
     
-    if(is_alt(p) || (*(long *)&v)==0) v = osd_alt_mav;
+    //if(is_alt(p) || (*(long *)&v)==0) v = osd_alt_mav;
     //printDistCnv(v);
     printFullDist(v);
 }
@@ -1647,14 +1647,13 @@ static int getTargetBearing(){
 // Output : 2 symbols that are combined as one arrow, shows direction to next waypoint
 // Size   : 1 x 2  (rows x chars)
 // Staus  : not ready
-/*
+
 static void panWPDir(point p){
     if(wp_number > 0 ){
-   
 	showArrow(getTargetBearing());
     }
 }
-*/
+
 /* **************************************************************** */
 // Panel  : panWPDis
 // Needs  : X, Y locations
@@ -1676,7 +1675,7 @@ static void panWPDis(point p){
         osd_printf_2(f4_0f, ((float)wp_dist * get_converth()), h);
         osd_nl();
     
-        showArrow(getTargetBearing());
+        //showArrow(getTargetBearing());
         osd_print_S(PSTR("\x20\x58\x65"));
         osd_printf_2(f4_0f, (err * get_converth()), h);
     }
@@ -2816,6 +2815,7 @@ const Panels_list PROGMEM panels_list[] = {
     { ID_of(homeDist) | 0x80,	panHomeDis, 	0x0b },
     { ID_of(homeDir), 		panHomeDir, 	0 },
     { ID_of(time),		panTime, 	0 },
+    { ID_of(WP_dir),    panWPDir, 0 },
     { ID_of(WP_dist),		panWPDis,	0x5c },
     { ID_of(alt),		panAlt, 	0x11 },
     { ID_of(homeAlt),		panHomeAlt, 	0x12 },
