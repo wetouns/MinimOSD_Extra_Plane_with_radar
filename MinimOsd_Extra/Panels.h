@@ -2907,11 +2907,15 @@ void writePanels(unsigned long pt){  // текущее время - функци
 
 //osd_printi_1(PSTR("%4i\x05"), lflags.motor_armed?88:99);
 
-// если выбран самолет
+//sets.model_type意思就是飞行器的类型，0是固定翼，1是四轴
+//lflags.in_air：当sets.model_type == 0的时候，且高度大于5，油门大于30，那么lflags.in_air = 1
+//motor_armed：当GPS FIX到某个模式，并且可见卫星大于6个的时候，lflags.motor_armed=true
+//osd_groundspeed：当osd_fix_type>0的时候，就从Mavlink读取速度，否则使用loc_speed（似乎是基于飞控的加速度计来算出的速度值，不依赖卫星）赋值
     if(sets.model_type == 0 ) { /* plane */ 
-        if( lflags.motor_armed  && lflags.in_air  &&
+        //判断飞机是不是在天上飞，去掉油门解锁的判断，因为in_air已经能代表飞机在天上飞了
+        if( /*lflags.motor_armed  && */lflags.in_air  &&
           ((int)osd_alt_to_home > 20 || (int)osd_groundspeed > 1 || osd_throttle > 1 )){
-            landed = pt; // пока летаем - заармлен, в воздухе, движется и есть газ -  постоянно обновляем это время
+            landed = pt; // 如果飞机在天上，并且高度大于20或者地速大于1又或者油门大于1，那landed这个时间值就会被不断的更新
 //DBG_PRINTF("set p landed=%u\n", landed);
 	}
     } else // copter
@@ -2956,7 +2960,10 @@ void writePanels(unsigned long pt){  // текущее время - функци
            storeChannels(); // remember control state
            fdata_screen=panelN;
 
-           goto show_fdata;
+           //把飞行总结的调用直接放在这里，不用GOTO跳转
+           panFdata({1,1});    //Flight summary panel
+           return;
+           //goto show_fdata;
       } else if(lflags.fdata){
            if(fdata_screen!=panelN) { // turn off by screen switch
                panelN=fdata_screen;
@@ -2968,9 +2975,9 @@ void writePanels(unsigned long pt){  // текущее время - функци
 //DBG_PRINTLN("reset FData by throttle");
                lflags.fdata=0;
            }
-show_fdata:
-           panFdata({1,1});    //Flight summary panel
-           return;
+//show_fdata:
+           //panFdata({1,1});    //Flight summary panel
+           //return;
       }
   }
   

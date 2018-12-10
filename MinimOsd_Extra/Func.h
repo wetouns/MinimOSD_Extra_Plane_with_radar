@@ -625,7 +625,9 @@ void setFdataVars()
     calc_max(max_home_distance, f);
     calc_max(max_osd_airspeed, osd_airspeed);
     calc_max(max_osd_groundspeed, osd_groundspeed);
-    calc_max(max_osd_home_alt, osd_alt_mav);
+    //这里总结的是最高海拨，现将其改为最高家的高度
+    //calc_max(max_osd_home_alt, osd_alt_mav);
+    calc_max(max_osd_home_alt, osd_alt_to_home);
     calc_max(max_osd_windspeed, osd_windspeed);
     calc_max(max_osd_power, power);
 

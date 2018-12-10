@@ -512,33 +512,33 @@ void loop()
 
 
 
-    getData(); // получить данные с контроллера
+    getData(); // 拿到数据
 
-    if(lflags.got_data){ // были свежие данные - обработать
+    if(lflags.got_data){ //当有数据可以处理的时候
 
-	pan_toggle(); // проверить переключение экранов
+	    pan_toggle(); // 检查屏幕的切换
 
-	if(!lflags.need_redraw) {
-	    lflags.need_redraw=1;
-	    vsync_wait=1; // будем ждать прерывания
-	}
+    	if(!lflags.need_redraw) {
+    	    lflags.need_redraw=1;
+    	    vsync_wait=1; // 等待运行中断
+    	}
 
-        lflags.got_data=0; // данные обработаны
+        lflags.got_data=0; // 表示数据已经处理，所以设置为0
     }
 
-    if( lflags.need_redraw &&  !vsync_wait) { // сразу после прерывания дабы успеть закончить расчет к следующему
-        lflags.need_redraw=0; // экран перерисован
+    if( lflags.need_redraw &&  !vsync_wait) { // 当发现有数据可以处理的时候就开始处理
+        lflags.need_redraw=0; // 重置状态
 
         setHomeVars();   // calculate and set Distance from home and Direction to home
 
-        setFdataVars();  // накопление статистики и рекордов
+        setFdataVars();  // 设置总结面板数据
 
-        writePanels(pt);   // writing enabled panels (check OSD_Panels Tab)
+        writePanels(pt);   // 开始向屏幕内存写入数据，但只是写入数据，屏幕并没有开始更新显示内容
 
 //	LED_BLINK;
 
 //LED_ON; // свечение диода во время ожидания перерисовки экрана
-	update_screen = 1; // пришли данные, надо перерисовать экран
+	update_screen = 1; // 将状态位设置为可更新屏幕
     }
 
 
@@ -559,7 +559,7 @@ void loop()
         if(update_screen && vsync_wait && time_since((uint32_t *)&vsync_time)>50){ // прерывания остановились - с последнего прошло более 50мс
             vsync_wait=0; // хватит ждать
         
-            OSD::update(); // обновим принудительно (и далее будем обновлять каждые 20мс)
+            OSD::update(); // 更新屏幕显示
             update_screen = 0;
         }
 
