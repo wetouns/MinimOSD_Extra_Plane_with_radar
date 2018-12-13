@@ -252,6 +252,10 @@ if(apm_mav_system  != msg.m.sysid){
                     osd_vbat_B = mavlink_msg_battery2_get_voltage(&msg.m) ; //Battery voltage, in millivolts (1 = 1 millivolt)
                 }
                 break;
+				
+			//case MAVLINK_MSG_ID_BATTERY_STATUS://获取每一节电芯的电压
+				//mavlink_msg_battery_status_get_voltages(&msg.m, cell_voltages);
+				//break;
 
 
     // EXTENDED_STATUS

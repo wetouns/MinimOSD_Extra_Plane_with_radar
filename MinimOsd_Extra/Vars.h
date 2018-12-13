@@ -10,6 +10,10 @@ Settings sets;	// настройки из EEPROM
 
 volatile byte garbage=0xf4;
 
+//电池每一节的电压，好像并不是，不管几S电出来的总和都是65左右
+//uint16_t cell_voltages[10] = {0,0,0,0,0,0,0,0,0,0};
+uint16_t cells = 0;
+
 
 static byte max7456_err_count=0;
 static byte stream_rate=0; // divider to requested rates 

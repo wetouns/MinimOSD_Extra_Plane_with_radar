@@ -1149,6 +1149,25 @@ static void panBatt_A(point p) {
   filter(volt,  osd_vbat_A, get_alt_filter(p) ); // комплиментарный фильтр 1/n.
 
   printVolt(volt, is_alt3(p));
+
+  //获取电池S数，获取好之后就不用每次都去计算了
+  if (cells <= 0) {
+    if (volt > 21600)
+      cells = 6;
+    else if (volt > 18000)
+      cells = 5;
+    else if (volt > 14400)
+      cells = 4;
+    else if (volt > 10800)
+      cells = 3;
+    else if (volt > 7200)
+      cells = 2;
+  }
+
+  //osd_printi_1(f2i, cells);
+  osd_nl();
+  printVolt(volt / cells, is_alt3(p));
+
 }
 
 
@@ -2864,7 +2883,7 @@ no_write:
     { ID_of(fVibe),		panVibe, 	0 },
     { ID_of(fVario),		panVario, 	0 },
     // warnings should be last
-    { ID_of(warn) | 0x80,       panWarn,	0 }, // show warnings even if screen is disabled
+    { ID_of(warn),panWarn,	0 }, // show warnings even if screen is disabled
     {0, 0}
   };
 
@@ -2925,7 +2944,8 @@ no_write:
     //判断飞机是不是在天上飞，去掉油门解锁的判断，因为in_air已经能代表飞机在天上飞了,条件是高度大于5，油门大于30
     //float gsUnit =  get_converth() * osd_groundspeed;
     if (lflags.in_air  && ((int)osd_alt_to_home > 20 || (int)osd_groundspeed > 1 || osd_throttle > 1) ) {
-      landed = pt; // 如果飞机在天上，并且高度大于20或者地速大于1又或者油门大于1，那landed这个时间值就会被不断的更新
+      // 如果飞机在天上，并且高度大于20或者地速大于1米每秒又或者油门大于1，那landed这个时间值就会被不断的更新
+      landed = pt;
     }
 
 
@@ -2987,7 +3007,7 @@ no_write:
         //    print_all_panels(&panels_list[sizeof(panels_list)/sizeof(Panels_list)-2]); // warnings only
         point p = {3, 3};
         osd_setPanel(p); // place cursor
-        panWarn(p);
+        //panWarn(p);
       }
 
 
