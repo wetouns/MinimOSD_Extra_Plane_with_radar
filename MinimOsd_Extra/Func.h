@@ -464,27 +464,34 @@ static void setHomeVars()
     
     if(lflags.osd_got_home){
 	{
+			//0.0174532925的值是1个弧度的意思，也就是PI/180，scaleLongDown参数保存的是不同纬度下，经度的距离缩放比例
             float scaleLongDown = cos(abs(osd_home.lat) * 0.0174532925);
-            //DST to Home
+            //计算出飞机位置到家位置的X轴和Y轴的垂直距离,单位是米,1度是111319.5米
             dstlat = diff_coord(osd_home.lat, osd_pos.lat);
+			//在不同纬度上，1度的经度变化的距离是不一样的,所以要乘上scaleLongDown来做一个缩放以算出实际距离
             dstlon = diff_coord(osd_home.lon, osd_pos.lon) * scaleLongDown;
         }
 
+		//通过勾股定理算出飞机离家距离
         osd_home_distance = distance(dstlat, dstlon);
-	dst_y=(int)dstlat; 		// prepare for RADAR
-	dst_x=(int)dstlon;    //don't abs the value
+		dst_y=(int)dstlat; 		// prepare for RADAR
+		dst_x=(int)dstlon;    //don't abs the value
 
         { //DIR to Home
             int bearing;
 
             bearing = atan2(dstlat, -dstlon) * 57.295775; //absolute home direction
-            //osd_angle = normalize_angle(bearing + 90);
-            off_course = normalize_angle(bearing + 90);//这个就是我要的方位角，off_course本来是COG的变量
+            //normalize_angle()这个函数是用来把角度限制在360以内，不让其出现负数
+			//这个就是我要的方位角，off_course本来是COG的变量
+            off_course = normalize_angle(bearing + 90);
             //osd_angle_direction = grad_to_sect(osd_angle); 
     //        bearing += ;//absolut return direction  //relative home direction
+			//bearing算出来的值就是回家角度，角度值从-180~180度，负数就是左转回家，正数就是右转回家。
+			//机载AAT就利用这个角度来驱动舵机
             bearing=normalize_angle(90 + bearing - 180 - osd_heading);
             home_dir_degree=bearing;
 
+			//把角度等比缩放到1-16之间，好后续显示回家箭头
             osd_home_direction = grad_to_sect(bearing); 
         }
   }

@@ -12,7 +12,10 @@ volatile byte garbage=0xf4;
 
 //电池每一节的电压，好像并不是，不管几S电出来的总和都是65左右
 //uint16_t cell_voltages[10] = {0,0,0,0,0,0,0,0,0,0};
-uint16_t cells = 0;
+uint8_t cells = 0;
+
+//AAT
+byte aatPin;
 
 
 static byte max7456_err_count=0;

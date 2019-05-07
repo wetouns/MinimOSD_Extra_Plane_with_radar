@@ -390,24 +390,30 @@ Serial.print_P(PSTR("#1zzzzz\n"));
 	eeprom_write_len( &sets.hw_version,  EEPROM_offs(sets) + ((byte *)&sets.hw_version - (byte *)&sets),  sizeof(sets.hw_version) );    
     }
 
-
+//***************************************PWM输出屏蔽了，我需要用来做AAT
     static const byte PROGMEM alt_pins[]= { VoltagePin, VidvoltagePin, AmperagePin, RssiPin };
+//
+//    if(sets.pwm_src && sets.pwm_dst) { // трансляция PWM на внешний вывод если заданы источник и приемник
+//
+//	byte PWM_out_pin = pgm_read_byte(&alt_pins[sets.pwm_dst-1]);
+//
+//        uint8_t port = digitalPinToPort(PWM_out_pin);
+//        PWM_out_bit  = digitalPinToBitMask(PWM_out_pin); // move out calculations from critical section
+//        PWM_out_port = portOutputRegister(port);
+//
+//#if !defined(SLAVE_BUILD)
+//        generate_PWM(0); // set pin to initial state
+//	pinMode(PWM_out_pin,  OUTPUT);
+//#endif
+//    }
+//***************************************PWM输出屏蔽了，我需要用来做AAT
 
-    if(sets.pwm_src && sets.pwm_dst) { // трансляция PWM на внешний вывод если заданы источник и приемник
-
-	byte PWM_out_pin = pgm_read_byte(&alt_pins[sets.pwm_dst-1]);
-
-        uint8_t port = digitalPinToPort(PWM_out_pin);
-        PWM_out_bit  = digitalPinToBitMask(PWM_out_pin); // move out calculations from critical section
-        PWM_out_port = portOutputRegister(port);
-
-#if !defined(SLAVE_BUILD)
-        generate_PWM(0); // set pin to initial state
-	pinMode(PWM_out_pin,  OUTPUT);
-#endif
-    }
+//把RSSI脚做为输出
+aatPin = pgm_read_byte(&alt_pins[2]);
+pinMode(aatPin,  OUTPUT);
 
 //Serial.print_P(PSTR("#2\n"));
+
 
     osd.init();    // Start display
 

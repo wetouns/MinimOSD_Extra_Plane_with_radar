@@ -1,6 +1,5 @@
 /******* PANELS - POSITION *******/
 
-
 extern struct loc_flags lflags;  // все булевые флаги кучей
 
 
@@ -394,6 +393,7 @@ byte NOINLINE radar_char() {
   return pgm_read_byte(&arr[i]);
 }
 
+//center_col和center_line这两个参数指的是雷达面板的中点坐标,画雷达的时候是基于这个中点去画的
 static void showRADAR(byte center_col, byte center_line, byte fTrack) {
 
 
@@ -403,7 +403,12 @@ static void showRADAR(byte center_col, byte center_line, byte fTrack) {
 
   // calculate display offset in y and x direction
 
-
+  //dst_y=41000 STEP_WIDTH=250  radar_zoom = abs(dst_y) / STEP_WIDTH + 1 = 165
+  //SCALE_Y	= (4.5 / STEP_WIDTH) = 0.018
+  //radar_zoom / SCALE_Y = 165 / 0.018 = 9166.6666
+  //dst_y / 9166.6666 = 4.47
+  //公式最终推导出来y=dst_y/((dst_y+step)/4.5)
+  //所以由此可见，事实上是先把总距离加上一个步长然后除以4.5，再用总距离除以前面算出来的结果，那么这样算出来的结果就永远小于4.5,再取个整，就变4了
   radar_zoom = max((int)(abs(dst_y) / STEP_WIDTH), (int)(abs(dst_x) / STEP_WIDTH)) + 1;
   byte y = (int)(dst_y / (radar_zoom / SCALE_Y));
   byte x = (int)(dst_x / (radar_zoom / SCALE_X) + 0.5);	// for even grid correction
@@ -431,7 +436,7 @@ static void showRADAR(byte center_col, byte center_line, byte fTrack) {
   //    }
 
   // show UAV
-  //这里修复了雷达位置错误的问题
+  //这里修复了雷达位置错误的问题 center_line = 2
   OSD::write_xy(center_col - x, center_line + y, radar_char());
 
 }
@@ -1151,20 +1156,15 @@ static void panBatt_A(point p) {
   printVolt(volt, is_alt3(p));
 
   //获取电池S数，获取好之后就不用每次都去计算了
-  if (cells <= 0) {
-    if (volt > 21600)
-      cells = 6;
-    else if (volt > 18000)
-      cells = 5;
-    else if (volt > 14400)
-      cells = 4;
-    else if (volt > 10800)
-      cells = 3;
-    else if (volt > 7200)
-      cells = 2;
+  if (cells <= 0 && osd_vbat_A > 0) {
+    float v_div = osd_vbat_A / 100;
+    //大于8.8v就是3，大于13.2v就是4s，大于17.6v就浊5s,大于22v就是6
+    //算法的核心就是用44这个参数，最低是1s
+    cells = (v_div / 44) + 1;
   }
 
-  //osd_printi_1(f2i, cells);
+  //osd.printf_P("%5f", volt1);
+  //  osd_printi_1("%3i", (int)v_div);
   osd_nl();
   printVolt(volt / cells, is_alt3(p));
 
@@ -1712,11 +1712,21 @@ static void panHomeDir(point p) {
 
   showArrow(osd_home_direction);
 
+
+
   //if(is_alt(p)) osd_printi_1(f3i, osd_home_direction);
   //上边这句是原版的，下边这句是我的，我要显示360度的回家方向
   if (home_dir_degree > 180) home_dir_degree -= 360;
   if (home_dir_degree < -180) home_dir_degree += 360;
   if (is_alt(p)) osd_printi_1(f3i, home_dir_degree);
+
+    //home_dir_degree这个变量存的是回家角度，0~360度的，先用它来驱动AAT，再拿去做二次运算,因为转完所有度数的话其实是大于180的，所以要缩小一点比值
+  //-360<home_dir_degree<360
+  if(home_dir_degree < 0) home_dir_degree += 360;
+  int pulsewidth = 500 + map(home_dir_degree,0,360,0,2000)*0.9556;
+  digitalWrite(aatPin,HIGH);//将舵机接口电平置高
+  delayMicroseconds(pulsewidth);//延时脉宽值的微秒数
+  digitalWrite(aatPin,LOW);//将舵机接口电平置低
 }
 
 static void panMessage(point p) {
@@ -2883,7 +2893,7 @@ no_write:
     { ID_of(fVibe),		panVibe, 	0 },
     { ID_of(fVario),		panVario, 	0 },
     // warnings should be last
-    { ID_of(warn),panWarn,	0 }, // show warnings even if screen is disabled
+    { ID_of(warn), panWarn,	0 }, // show warnings even if screen is disabled
     {0, 0}
   };
 
